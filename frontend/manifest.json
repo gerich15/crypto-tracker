@@ -1,0 +1,7 @@
+{
+    "url": "https://your-domain.com",
+    "name": "Crypto Tracker",
+    "iconUrl": "https://your-domain.com/icon.png",
+    "description": "Track cryptocurrency prices in real-time",
+    "short_name": "Crypto Tracker"
+}
