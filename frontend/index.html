@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Tracker</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin: 8px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .coin {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .coin:last-child {
+            border-bottom: none;
+        }
+        
+        .coin-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .coin-symbol {
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        
+        .coin-price {
+            text-align: right;
+        }
+        
+        .price {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        
+        .change {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        
+        .positive {
+            color: #00c853;
+            background: rgba(0, 200, 83, 0.1);
+        }
+        
+        .negative {
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+        }
+        
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 30px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Crypto Tracker</h1>
+            <p>Real-time cryptocurrency prices</p>
+        </div>
+        
+        <div class="card">
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalCoins">5</div>
+                    <div class="stat-label">Coins</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">Demo</div>
+                    <div class="stat-label">Data</div>
+                </div>
+            </div>
+            
+            <button class="btn" onclick="loadCryptoData()">
+                📊 Load Crypto Prices
+            </button>
+        </div>
+        
+        <div class="card">
+            <h3 style="margin-bottom: 15px; color: #333;">Cryptocurrencies</h3>
+            <div id="cryptoData">
+                <div class="loading">Click button to load prices</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <p style="text-align: center; color: #666; font-size: 14px;">
+                Hosted on GitHub Pages<br>
+                Crypto Tracker Demo
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Telegram Web App initialization
+        let tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.expand();
+            tg.ready();
+            console.log('✅ Telegram Web App initialized');
+        }
+        
+        const cryptoData = [
+            {
+                id: 'bitcoin',
+                name: 'Bitcoin',
+                symbol: 'BTC',
+                price: 45218.50,
+                change: 2.34
+            },
+            {
+                id: 'ethereum', 
+                name: 'Ethereum',
+                symbol: 'ETH',
+                price: 2387.21,
+                change: 1.56
+            },
+            {
+                id: 'binancecoin',
+                name: 'Binance Coin',
+                symbol: 'BNB', 
+                price: 315.78,
+                change: -0.45
+            },
+            {
+                id: 'ripple',
+                name: 'XRP',
+                symbol: 'XRP',
+                price: 0.5789,
+                change: 0.23
+            },
+            {
+                id: 'cardano',
+                name: 'Cardano',
+                symbol: 'ADA',
+                price: 0.5123,
+                change: -1.20
+            }
+        ];
+        
+        function loadCryptoData() {
+            const container = document.getElementById('cryptoData');
+            
+            let html = '';
+            cryptoData.forEach((coin, index) => {
+                const changeClass = coin.change >= 0 ? 'positive' : 'negative';
+                const changeSymbol = coin.change >= 0 ? '+' : '';
+                
+                html += `
+                    <div class="coin">
+                        <div>
+                            <div class="coin-name">${coin.name}</div>
+                            <div class="coin-symbol">${coin.symbol}</div>
+                        </div>
+                        <div class="coin-price">
+                            <div class="price">$${coin.price.toLocaleString()}</div>
+                            <div class="change ${changeClass}">
+                                ${changeSymbol}${coin.change}%
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Auto-load on start
+        setTimeout(loadCryptoData, 1000);
+    </script>
+</body>
+</html>
